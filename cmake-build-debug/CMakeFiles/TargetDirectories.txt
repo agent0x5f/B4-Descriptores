@@ -1,0 +1,3 @@
+/Users/matt/CLionProjects/3-B3-Descriptores/cmake-build-debug/CMakeFiles/filtro_sobel.dir
+/Users/matt/CLionProjects/3-B3-Descriptores/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/matt/CLionProjects/3-B3-Descriptores/cmake-build-debug/CMakeFiles/rebuild_cache.dir

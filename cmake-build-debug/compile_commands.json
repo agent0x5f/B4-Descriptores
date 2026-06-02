@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/Users/matt/CLionProjects/3-B3-Descriptores/cmake-build-debug",
+  "command": "/usr/bin/c++ -isystem /opt/homebrew/Cellar/opencv/4.13.0_3/include/opencv4 -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/filtro_sobel.dir/main.cpp.o -c /Users/matt/CLionProjects/3-B3-Descriptores/main.cpp",
+  "file": "/Users/matt/CLionProjects/3-B3-Descriptores/main.cpp",
+  "output": "/Users/matt/CLionProjects/3-B3-Descriptores/cmake-build-debug/CMakeFiles/filtro_sobel.dir/main.cpp.o"
+}
+]

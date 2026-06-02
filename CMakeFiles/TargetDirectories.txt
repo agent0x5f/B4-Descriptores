@@ -1,0 +1,3 @@
+C:/Users/Mat/Downloads/VA3/3D-Descriptores/CMakeFiles/filtro_sobel.dir
+C:/Users/Mat/Downloads/VA3/3D-Descriptores/CMakeFiles/edit_cache.dir
+C:/Users/Mat/Downloads/VA3/3D-Descriptores/CMakeFiles/rebuild_cache.dir
