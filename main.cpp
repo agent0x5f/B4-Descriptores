@@ -3,7 +3,10 @@
 #include <cmath>
 #include <limits>
 #include <opencv2/opencv.hpp>
-
+//15: Momentos invariantes de Hu (7)
+//16: Área, perímetro, longitud, centroide, orientación
+//18: Factor circularidad / compactación
+//22: Radii
 namespace fs = std::filesystem;
 // Carga la matriz binaria donde la imagen ya fue separada del fondo por Otsu
 cv::Mat cargarImagenBinaria(const std::string& ruta) {
