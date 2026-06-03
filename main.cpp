@@ -5,18 +5,21 @@
 #include <opencv2/opencv.hpp>
 
 namespace fs = std::filesystem;
-
+// Carga la matriz binaria donde la imagen ya fue separada del fondo por Otsu
 cv::Mat cargarImagenBinaria(const std::string& ruta) {
     return cv::imread(ruta, cv::IMREAD_GRAYSCALE);
 }
 
+//calcula todas las metricas de forma y momentos invariantes
 void ejecutarMotorGeometrico(const cv::Mat& binaria) {
     std::cout << "[Modulo] Iniciando Analisis Geometrico e Invariante..." << std::endl;
 
     double area = 0.0;
     double m10 = 0.0;
     double m01 = 0.0;
-
+    // Calculo de los momentos espaciales crudos
+    // El momento m00 equivale al area total (suma de pixeles blancos)
+    // Los momentos m10 y m01 acumulan la posicion de los objetos en los ejes X y Y
     for (int y = 0; y < binaria.rows; ++y) {
         for (int x = 0; x < binaria.cols; ++x) {
             if (binaria.at<uchar>(y, x) >= 127) {
@@ -31,10 +34,12 @@ void ejecutarMotorGeometrico(const cv::Mat& binaria) {
         std::cout << "Error: No se encontraron regiones segmentadas." << std::endl;
         return;
     }
-
+    //centroide
     double cx = m10 / area;
     double cy = m01 / area;
-
+    // Declaracion de las variables para los momentos centrales (mu)
+    // Estos momentos trasladan el origen del plano cartesiano hacia el centroide
+    // asi las mediciones son invariantes a la traslacion
     double mu20 = 0.0, mu02 = 0.0, mu11 = 0.0;
     double mu30 = 0.0, mu03 = 0.0, mu21 = 0.0, mu12 = 0.0;
 
@@ -52,10 +57,10 @@ void ejecutarMotorGeometrico(const cv::Mat& binaria) {
     for (int y = 0; y < binaria.rows; ++y) {
         for (int x = 0; x < binaria.cols; ++x) {
             if (binaria.at<uchar>(y, x) >= 127) {
-
+                // Calculo de la distancia de cada pixel respecto al centroide
                 double dx = x - cx;
                 double dy = y - cy;
-
+                // Construccion de los momentos centrales de segundo y tercer orden
                 mu20 += std::pow(dx, 2);
                 mu02 += std::pow(dy, 2);
                 mu11 += dx * dy;
@@ -64,7 +69,7 @@ void ejecutarMotorGeometrico(const cv::Mat& binaria) {
                 mu03 += std::pow(dy, 3);
                 mu21 += std::pow(dx, 2) * dy;
                 mu12 += dx * std::pow(dy, 2);
-
+                // Para identificar si el pixel actual es frontera
                 bool esFrontera = false;
                 for (int i = 0; i < 8; ++i) {
                     int nx = x + vecinosX[i];
@@ -74,7 +79,7 @@ void ejecutarMotorGeometrico(const cv::Mat& binaria) {
                         break;
                     }
                 }
-
+                // Si es frontera, aporta al perimetro y se miden sus radios
                 if (esFrontera) {
                     perimetro += 1.0;
                     visualizacion.at<cv::Vec3b>(y, x) = cv::Vec3b(255, 255, 255);
@@ -88,18 +93,20 @@ void ejecutarMotorGeometrico(const cv::Mat& binaria) {
 
     double circularidad = (perimetro > 0.0) ? (4.0 * CV_PI * area) / (perimetro * perimetro) : 0.0;
     double relacionRadios = (radioMaximo > 0.0) ? (radioMinimo / radioMaximo) : 0.0;
-
+    // Division de los momentos de segundo orden entre el area para extraer la varianza espacial
     double u20 = mu20 / area;
     double u02 = mu02 / area;
     double u11 = mu11 / area;
-
+    // Calculo del mayor valor propio (Eigenvalue) de la Matriz de Covarianza
+    // extrae la longitud y orientacion del eje principal de la forma
     double discriminante = std::sqrt(4.0 * u11 * u11 + std::pow(u20 - u02, 2));
     double lambda1 = (u20 + u02) / 2.0 + discriminante / 2.0;
     double longitudEjeMayor = 4.0 * std::sqrt(lambda1);
-
+    // Calculo del arco tangente para aislar el angulo de inclinacion
     double orientacionRad = 0.5 * std::atan2(2.0 * u11, u20 - u02);
     double orientacionGrados = orientacionRad * 180.0 / CV_PI;
-
+    // Calcular los momentos centrales normalizados (eta)
+    // Para que las mediciones sean invariantes al escalamiento
     auto eta = [&](double mu, int p, int q) {
         double gamma = (p + q) / 2.0 + 1.0;
         return mu / std::pow(area, gamma);
@@ -112,7 +119,9 @@ void ejecutarMotorGeometrico(const cv::Mat& binaria) {
     double n03 = eta(mu03, 0, 3);
     double n21 = eta(mu21, 2, 1);
     double n12 = eta(mu12, 1, 2);
-
+    // Expansion polinomica de los 7 Momentos de Hu
+    // combinan los momentos normalizados para crear las firmas
+    // que son invariantes a la rotacion, traslacion y escala
     double h[7];
     h[0] = n20 + n02;
     h[1] = std::pow(n20 - n02, 2) + 4.0 * std::pow(n11, 2);
